@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyVerse — your calm, gamified study companion</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+:root{
+  --sky:#8EC5FC;
+  --lavender:#B8A6E8;
+  --pink:#F5A9C4;
+  --purple-deep:#4A3F6B;
+  --purple-mid:#7E6FA8;
+  --glass: rgba(255,255,255,0.55);
+  --glass-strong: rgba(255,255,255,0.75);
+  --glass-border: rgba(255,255,255,0.65);
+  --bg1:#EAF2FF;
+  --bg2:#F3EAFB;
+  --bg3:#FDEFF6;
+  --shadow-soft: 0 8px 32px rgba(120,100,180,0.15);
+  --radius-lg: 26px;
+  --radius-md: 18px;
+  --radius-sm: 12px;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  font-family:'Inter', sans-serif;
+  color:var(--purple-deep);
+  min-height:100vh;
+  overflow-x:hidden;
+  background:linear-gradient(135deg,var(--bg1) 0%,var(--bg2) 45%, var(--bg3) 100%);
+}
+h1,h2,h3,.display{font-family:'Fredoka', sans-serif; font-weight:600;}
+.num{font-family:'Space Grotesk', sans-serif; font-weight:700;}
+
+/* ---------- ambient background ---------- */
+.orb-field{position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none;}
+.orb{position:absolute; border-radius:50%; filter:blur(50px); opacity:0.45; animation:float 18s ease-in-out infinite;}
+.orb.o1{width:420px;height:420px; background:var(--sky); top:-120px; left:-100px; animation-duration:22s;}
+.orb.o2{width:340px;height:340px; background:var(--lavender); bottom:-100px; right:-80px; animation-duration:26s; animation-delay:-6s;}
+.orb.o3{width:260px;height:260px; background:var(--pink); top:40%; right:15%; animation-duration:19s; animation-delay:-3s;}
+.orb.o4{width:200px;height:200px; background:var(--lavender); bottom:20%; left:10%; animation-duration:24s; animation-delay:-10s;}
+@keyframes float{
+  0%,100%{transform:translate(0,0) scale(1);}
+  33%{transform:translate(30px,-40px) scale(1.08);}
+  66%{transform:translate(-25px,25px) scale(0.95);}
+}
+.particle{position:absolute; width:5px; height:5px; border-radius:50%; background:rgba(255,255,255,0.8); animation:drift linear infinite;}
+@keyframes drift{
+  from{transform:translateY(0) translateX(0); opacity:0;}
+  10%{opacity:0.9;}
+  90%{opacity:0.5;}
+  to{transform:translateY(-110vh) translateX(20px); opacity:0;}
+}
+
+/* ---------- app shell ---------- */
+.app{position:relative; z-index:1; display:flex; min-height:100vh;}
+.sidebar{
+  width:240px; flex-shrink:0; padding:26px 16px; display:flex; flex-direction:column; gap:6px;
+  background:var(--glass); backdrop-filter:blur(18px); border-right:1px solid var(--glass-border);
+}
+.brand{display:flex; align-items:center; gap:10px; padding:6px 10px 26px 10px;}
+.brand .mark{width:34px; height:34px; border-radius:10px; background:linear-gradient(135deg,var(--sky),var(--lavender)); display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow:var(--shadow-soft);}
+.brand span{font-family:'Fredoka'; font-size:19px; font-weight:600; color:var(--purple-deep);}
+.navitem{
+  display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:14px; cursor:pointer;
+  color:var(--purple-mid); font-weight:500; font-size:14.5px; transition:all .25s ease; border:1px solid transparent;
+}
+.navitem .ic{font-size:17px; width:20px; text-align:center;}
+.navitem:hover{background:rgba(255,255,255,0.5); transform:translateX(2px);}
+.navitem.active{background:var(--glass-strong); color:var(--purple-deep); border-color:var(--glass-border); box-shadow:var(--shadow-soft); font-weight:600;}
+.sidebar-foot{margin-top:auto; padding:14px; border-radius:16px; background:rgba(255,255,255,0.4); font-size:12.5px; color:var(--purple-mid); text-align:center; line-height:1.5;}
+
+.main{flex:1; min-width:0; padding:22px 30px 60px; display:flex; flex-direction:column; gap:22px;}
+
+/* ---------- topbar ---------- */
+.topbar{display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;}
+.greet h1{font-size:26px;}
+.greet p{font-size:13.5px; color:var(--purple-mid); margin-top:2px;}
+.top-stats{display:flex; gap:10px; flex-wrap:wrap;}
+.pill{
+  display:flex; align-items:center; gap:7px; padding:9px 15px; border-radius:999px;
+  background:var(--glass); backdrop-filter:blur(14px); border:1px solid var(--glass-border); box-shadow:var(--shadow-soft);
+  font-size:13.5px; font-weight:600;
+}
+.pill .pv{font-family:'Space Grotesk'; font-weight:700;}
+
+/* ---------- glass card ---------- */
+.card{
+  background:var(--glass); backdrop-filter:blur(16px); border:1px solid var(--glass-border);
+  border-radius:var(--radius-lg); box-shadow:var(--shadow-soft); padding:22px; position:relative; overflow:hidden;
+}
+.card::before{content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.9),transparent);}
+.card-head{display:flex; align-items:center; justify-content:between; justify-content:space-between; margin-bottom:14px;}
+.card-head h3{font-size:15.5px; font-weight:600;}
+.card-head .tag{font-size:11px; padding:3px 10px; border-radius:999px; background:rgba(255,255,255,0.6); color:var(--purple-mid); font-weight:600;}
+
+.grid{display:grid; gap:18px;}
+.g4{grid-template-columns:repeat(4,1fr);}
+.g3{grid-template-columns:repeat(3,1fr);}
+.g2{grid-template-columns:2fr 1fr;}
+@media(max-width:1100px){.g4{grid-template-columns:repeat(2,1fr);} .g2{grid-template-columns:1fr;} .g3{grid-template-columns:1fr 1fr;}}
+
+/* ---------- stat card ---------- */
+.stat{padding:18px; border-radius:var(--radius-md);}
+.stat .top{display:flex; justify-content:space-between; align-items:flex-start;}
+.stat .icon{font-size:20px;}
+.stat .val{font-family:'Space Grotesk'; font-size:28px; font-weight:700; margin-top:10px;}
+.stat .lbl{font-size:12.5px; color:var(--purple-mid); margin-top:2px;}
+.stat .bar-track{height:6px; border-radius:6px; background:rgba(255,255,255,0.6); margin-top:12px; overflow:hidden;}
+.stat .bar-fill{height:100%; border-radius:6px; background:linear-gradient(90deg,var(--sky),var(--lavender)); transition:width 1s ease;}
+
+/* ---------- panels visibility ---------- */
+.panel{display:none; flex-direction:column; gap:20px; animation:fadeIn .5s ease;}
+.panel.active{display:flex;}
+@keyframes fadeIn{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);}}
+
+/* ---------- tasks ---------- */
+.task-list{display:flex; flex-direction:column; gap:10px;}
+.task{
+  display:flex; align-items:center; gap:12px; padding:13px 14px; border-radius:16px;
+  background:rgba(255,255,255,0.5); border:1px solid rgba(255,255,255,0.6); transition:all .3s ease;
+}
+.task.done{opacity:0.55;}
+.task.done .task-title{text-decoration:line-through;}
+.check{
+  width:24px; height:24px; border-radius:8px; border:2px solid var(--purple-mid); flex-shrink:0; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; font-size:13px; transition:all .25s ease; background:white;
+}
+.check.on{background:linear-gradient(135deg,var(--sky),var(--lavender)); border-color:transparent; color:white; transform:scale(1.08);}
+.task-body{flex:1; min-width:0;}
+.task-title{font-size:14px; font-weight:600;}
+.task-meta{font-size:11.5px; color:var(--purple-mid); margin-top:2px; display:flex; gap:8px; flex-wrap:wrap;}
+.chip{padding:2px 9px; border-radius:999px; font-size:10.5px; font-weight:700; letter-spacing:.2px;}
+.chip.high{background:#FFE1E8; color:#C24E6E;}
+.chip.med{background:#FFEFD2; color:#B07A22;}
+.chip.low{background:#DDF3E4; color:#347A50;}
+.task-reward{font-size:12px; font-weight:700; color:var(--purple-mid); font-family:'Space Grotesk';}
+
+/* add task form */
+.add-row{display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;}
+.add-row input, .add-row select{
+  flex:1; min-width:110px; padding:10px 13px; border-radius:12px; border:1px solid var(--glass-border);
+  background:rgba(255,255,255,0.6); font-size:13px; font-family:inherit; color:var(--purple-deep);
+}
+.btn{
+  padding:10px 18px; border-radius:12px; border:none; cursor:pointer; font-weight:600; font-size:13.5px;
+  background:linear-gradient(135deg,var(--sky),var(--lavender)); color:white; box-shadow:var(--shadow-soft);
+  transition:transform .2s ease, box-shadow .2s ease;
+}
+.btn:hover{transform:translateY(-2px); box-shadow:0 10px 26px rgba(120,100,180,0.28);}
+.btn.ghost{background:rgba(255,255,255,0.6); color:var(--purple-deep); border:1px solid var(--glass-border);}
+
+/* ---------- heatmap ---------- */
+.heatmap{display:grid; grid-template-columns:repeat(26,1fr); gap:4px;}
+.hcell{aspect-ratio:1; border-radius:4px; background:rgba(255,255,255,0.5);}
+.hcell.l1{background:#D7E9FF;} .hcell.l2{background:#AECBFA;} .hcell.l3{background:#B8A6E8;} .hcell.l4{background:#8C6FD8;}
+
+/* ---------- companion ---------- */
+.companion-hero{display:flex; align-items:center; gap:26px; flex-wrap:wrap;}
+.aura{
+  width:150px; height:150px; border-radius:50%; flex-shrink:0; position:relative;
+  display:flex; align-items:center; justify-content:center;
+  background:conic-gradient(var(--lavender) var(--aura-pct,60%), rgba(255,255,255,0.4) 0);
+  transition:background 1s ease;
+}
+.aura::before{content:''; position:absolute; inset:10px; border-radius:50%; background:var(--glass-strong); backdrop-filter:blur(6px);}
+.aura canvas{position:relative; z-index:1; border-radius:50%;}
+.aura.lg{width:260px; height:260px;}
+.aura.lg::before{inset:16px;}
+.evo-track{display:flex; gap:0; margin-top:18px; flex-wrap:wrap; gap:10px;}
+.evo-stage{flex:1; min-width:120px; padding:12px; border-radius:14px; background:rgba(255,255,255,0.45); text-align:center; border:1px solid transparent; opacity:.55;}
+.evo-stage.reached{opacity:1; border-color:var(--glass-border); background:rgba(255,255,255,0.7);}
+.evo-stage.current{box-shadow:0 0 0 2px var(--lavender), var(--shadow-soft);}
+.evo-stage .emoji{font-size:26px; width:64px; height:64px; margin:0 auto; display:flex; align-items:center; justify-content:center;}
+.evo-stage .emoji img{width:100%; height:100%; object-fit:contain; filter:drop-shadow(0 4px 8px rgba(120,100,180,0.25));}
+.evo-stage .lv{font-size:11px; color:var(--purple-mid); font-weight:700; margin-top:4px;}
+.evo-stage .nm{font-size:12px; font-weight:600; margin-top:1px;}
+
+/* ---------- toast / celebration ---------- */
+#toast-wrap{position:fixed; top:20px; right:20px; z-index:999; display:flex; flex-direction:column; gap:10px; align-items:flex-end;}
+.toast{
+  background:var(--glass-strong); backdrop-filter:blur(16px); border:1px solid var(--glass-border);
+  padding:13px 18px; border-radius:16px; box-shadow:0 12px 32px rgba(120,100,180,0.28);
+  font-size:13.5px; font-weight:600; display:flex; align-items:center; gap:10px; animation:toastIn .4s ease, toastOut .4s ease 2.6s forwards;
+}
+@keyframes toastIn{from{transform:translateX(60px); opacity:0;} to{transform:translateX(0); opacity:1;}}
+@keyframes toastOut{to{transform:translateX(60px); opacity:0;}}
+
+/* ---------- pomodoro ---------- */
+.focus-wrap{display:flex; flex-direction:column; align-items:center; gap:22px; padding:30px 10px;}
+.timer-ring{width:230px; height:230px; border-radius:50%; position:relative; display:flex; align-items:center; justify-content:center;
+  background:conic-gradient(var(--sky) var(--tpct,0%), rgba(255,255,255,0.5) 0); transition:background 1s linear;}
+.timer-ring::before{content:''; position:absolute; inset:14px; border-radius:50%; background:var(--glass-strong); backdrop-filter:blur(8px);}
+.timer-txt{position:relative; font-family:'Space Grotesk'; font-size:42px; font-weight:700;}
+.timer-sub{position:relative; font-size:12px; color:var(--purple-mid); margin-top:4px;}
+.timer-ctrls{display:flex; gap:10px;}
+.sound-row{display:flex; gap:10px; flex-wrap:wrap; justify-content:center;}
+.sound-chip{padding:9px 16px; border-radius:999px; background:rgba(255,255,255,0.5); border:1px solid var(--glass-border); font-size:12.5px; cursor:pointer; font-weight:600; transition:all .2s;}
+.sound-chip.on{background:linear-gradient(135deg,var(--sky),var(--lavender)); color:white;}
+.block-list{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; max-width:500px;}
+.block-item{padding:6px 12px; border-radius:999px; background:rgba(255,255,255,0.5); font-size:11.5px; color:var(--purple-mid); font-weight:600;}
+
+/* ---------- coding ---------- */
+.diff-bar{display:flex; height:14px; border-radius:8px; overflow:hidden; margin-top:12px;}
+.diff-bar span{height:100%;}
+.plat-card{display:flex; align-items:center; gap:12px; padding:14px; border-radius:14px; background:rgba(255,255,255,0.5);}
+.plat-card .logo{width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:17px; color:white; font-weight:700; flex-shrink:0;}
+
+/* ---------- calendar ---------- */
+.cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:6px;}
+.cal-day{aspect-ratio:1; border-radius:10px; background:rgba(255,255,255,0.45); display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:12px; font-weight:600; position:relative;}
+.cal-day.today{background:linear-gradient(135deg,var(--sky),var(--lavender)); color:white;}
+.cal-dot{width:5px; height:5px; border-radius:50%; background:var(--pink); position:absolute; bottom:6px;}
+.cal-day.muted{opacity:0.35;}
+
+/* ---------- brain gym ---------- */
+.game-card{padding:20px; border-radius:18px; background:rgba(255,255,255,0.5); text-align:center; cursor:pointer; transition:transform .25s ease;}
+.game-card:hover{transform:translateY(-4px);}
+.game-card .em{font-size:30px;}
+.game-card h4{font-size:13.5px; margin-top:8px;}
+.game-card p{font-size:11px; color:var(--purple-mid); margin-top:2px;}
+
+.mem-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; max-width:340px; margin:16px auto 0;}
+.mem-card{aspect-ratio:1; border-radius:12px; background:linear-gradient(135deg,var(--sky),var(--lavender)); display:flex; align-items:center; justify-content:center; font-size:22px; cursor:pointer; color:transparent; transition:all .3s ease; user-select:none;}
+.mem-card.flip{color:white; background:rgba(255,255,255,0.6); box-shadow:var(--shadow-soft);}
+.mem-card.matched{background:linear-gradient(135deg,#a8e6b5,#8ec5fc); color:white; cursor:default;}
+
+/* ---------- rewards ---------- */
+.reward-card{padding:16px; border-radius:16px; background:rgba(255,255,255,0.5); text-align:center;}
+.reward-card .em{font-size:28px;}
+.reward-card .nm{font-size:12.5px; font-weight:600; margin-top:6px;}
+.reward-card .cost{font-size:11.5px; color:var(--purple-mid); margin-top:2px; font-weight:700;}
+
+/* ---------- mood modal ---------- */
+.modal-bg{position:fixed; inset:0; background:rgba(74,63,107,0.35); backdrop-filter:blur(4px); z-index:1000; display:flex; align-items:center; justify-content:center; animation:fadeIn .3s ease;}
+.modal{background:var(--glass-strong); backdrop-filter:blur(20px); border:1px solid var(--glass-border); border-radius:26px; padding:32px; max-width:400px; width:90%; text-align:center; box-shadow:0 20px 60px rgba(90,70,140,0.3);}
+.modal h2{font-size:20px; margin-bottom:6px;}
+.modal p{font-size:13px; color:var(--purple-mid); margin-bottom:20px;}
+.mood-row{display:flex; justify-content:center; gap:12px;}
+.mood-btn{width:60px; height:60px; border-radius:18px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.6); font-size:24px; cursor:pointer; transition:all .2s ease;}
+.mood-btn:hover{transform:scale(1.1); box-shadow:var(--shadow-soft);}
+
+.progress-note{font-size:11.5px; color:var(--purple-mid); text-align:center; padding:14px; background:rgba(255,255,255,0.4); border-radius:14px;}
+
+::-webkit-scrollbar{width:8px;} ::-webkit-scrollbar-thumb{background:rgba(140,120,190,0.4); border-radius:8px;}
+</style>
+</head>
+<body>
+
+<div class="orb-field" id="orbField">
+  <div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div><div class="orb o4"></div>
+</div>
+<canvas id="burst-canvas" style="position:fixed; inset:0; pointer-events:none; z-index:998;"></canvas>
+<div id="toast-wrap"></div>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="brand"><div class="mark">🌸</div><span>StudyVerse</span></div>
+    <div class="navitem active" data-panel="dashboard"><span class="ic">🏡</span>Dashboard</div>
+    <div class="navitem" data-panel="planner"><span class="ic">📝</span>Study Planner</div>
+    <div class="navitem" data-panel="coding"><span class="ic">💻</span>Coding Hub</div>
+    <div class="navitem" data-panel="companion"><span class="ic">🦊</span>Companion</div>
+    <div class="navitem" data-panel="focus"><span class="ic">🌿</span>Focus Mode</div>
+    <div class="navitem" data-panel="braingym"><span class="ic">🧠</span>Brain Gym</div>
+    <div class="navitem" data-panel="calendar"><span class="ic">📅</span>Calendar</div>
+    <div class="navitem" data-panel="rewards"><span class="ic">🎁</span>Rewards Store</div>
+    <div class="sidebar-foot">Prototype build<br>Frontend demo · mock data</div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="greet">
+        <h1 id="greetTitle">Good to see you, Aanya 🌤️</h1>
+        <p id="greetSub">Small steps today. You're doing better than you think.</p>
+      </div>
+      <div class="top-stats">
+        <div class="pill">🔥 <span class="pv" id="streakPill">12</span> day streak</div>
+        <div class="pill">✨ <span class="pv" id="xpPill">2,480</span> XP</div>
+        <div class="pill">🪙 <span class="pv" id="coinPill">640</span> coins</div>
+        <div class="pill">🌱 Lv <span class="pv" id="lvPill">7</span></div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="panel active" id="panel-dashboard">
+      <div class="grid g4">
+        <div class="card stat"><div class="top"><span class="lbl">Consistency</span><span class="icon">🌤️</span></div><div class="val">78%</div><div class="lbl">Good — keep it steady</div><div class="bar-track"><div class="bar-fill" style="width:78%"></div></div></div>
+        <div class="card stat"><div class="top"><span class="lbl">Study Time Today</span><span class="icon">⏱️</span></div><div class="val">3h 20m</div><div class="lbl">Goal: 4h</div><div class="bar-track"><div class="bar-fill" style="width:83%"></div></div></div>
+        <div class="card stat"><div class="top"><span class="lbl">Tasks Completed</span><span class="icon">✅</span></div><div class="val" id="taskDoneCount">2/5</div><div class="lbl">3 remaining today</div><div class="bar-track"><div class="bar-fill" id="taskBar" style="width:40%"></div></div></div>
+        <div class="card stat"><div class="top"><span class="lbl">Coding Streak</span><span class="icon">🧩</span></div><div class="val">9 days</div><div class="lbl">Longest: 21 days</div><div class="bar-track"><div class="bar-fill" style="width:60%"></div></div></div>
+      </div>
+
+      <div class="grid g2">
+        <div class="card">
+          <div class="card-head"><h3>Today's Focus</h3><span class="tag">5 tasks</span></div>
+          <div class="task-list" id="taskList"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Your Companion</h3><span class="tag">Lv 7</span></div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
+            <div class="aura" style="--aura-pct:70%;"><canvas id="foxCanvasDash" width="130" height="130" style="width:130px;height:130px;"></canvas></div>
+            <div style="text-align:center;">
+              <div style="font-weight:600; font-size:14px;">Ember Kit — Awakened Stage</div>
+              <div class="lbl" style="margin-top:2px;">420 XP to next evolution</div>
+            </div>
+            <div class="bar-track" style="width:100%;"><div class="bar-fill" style="width:65%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid g2">
+        <div class="card">
+          <div class="card-head"><h3>Study Activity</h3><span class="tag">Last 26 weeks</span></div>
+          <div class="heatmap" id="heatmap"></div>
+          <div class="progress-note" style="margin-top:12px;">Lighter = lower activity, deep lavender = deep focus days 🌸</div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Upcoming Deadlines</h3></div>
+          <div class="task-list">
+            <div class="task"><div class="check on" style="visibility:hidden;"></div><div class="task-body"><div class="task-title">DSA — Graph Algorithms Assignment</div><div class="task-meta">Due in 2 days <span class="chip high">High</span></div></div></div>
+            <div class="task"><div class="check on" style="visibility:hidden;"></div><div class="task-body"><div class="task-title">Organic Chemistry Mock Test</div><div class="task-meta">Due in 4 days <span class="chip med">Medium</span></div></div></div>
+            <div class="task"><div class="check on" style="visibility:hidden;"></div><div class="task-body"><div class="task-title">History Revision — Unit 5</div><div class="task-meta">Due in 6 days <span class="chip low">Low</span></div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid g3">
+        <div class="card"><div class="card-head"><h3>Weekly Goals</h3></div><div class="progress-note">4 / 6 goals on track this week. Nice pace 🌷</div></div>
+        <div class="card"><div class="card-head"><h3>Most Productive Hour</h3></div><div class="val num" style="font-size:22px;">7:00–8:30 PM</div><div class="lbl">Based on last 30 days</div></div>
+        <div class="card"><div class="card-head"><h3>Today's Motivation</h3></div><div class="progress-note" style="font-style:italic;">"Consistency isn't about intensity. It's about showing up gently, again and again."</div></div>
+      </div>
+    </div>
+
+    <!-- PLANNER -->
+    <div class="panel" id="panel-planner">
+      <div class="card">
+        <div class="card-head"><h3>Add a task</h3></div>
+        <div class="add-row">
+          <input id="newTaskTitle" placeholder="e.g. Revise Thermodynamics Ch.3" />
+          <select id="newTaskPriority"><option value="low">Low priority</option><option value="med" selected>Medium priority</option><option value="high">High priority</option></select>
+          <button class="btn" onclick="addTask()">+ Add Task</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>All Tasks</h3><span class="tag" id="plannerCount">5 tasks</span></div>
+        <div class="task-list" id="plannerList"></div>
+      </div>
+    </div>
+
+    <!-- CODING -->
+    <div class="panel" id="panel-coding">
+      <div class="grid g4">
+        <div class="card stat"><div class="lbl">Problems Solved</div><div class="val">312</div><div class="lbl">+14 this week</div></div>
+        <div class="card stat"><div class="lbl">Contest Rating</div><div class="val">1742</div><div class="lbl">Codeforces</div></div>
+        <div class="card stat"><div class="lbl">Coding Hours (wk)</div><div class="val">11.5h</div><div class="lbl">Goal: 14h</div></div>
+        <div class="card stat"><div class="lbl">Current Streak</div><div class="val">9 🔥</div><div class="lbl">Longest: 21</div></div>
+      </div>
+      <div class="grid g2">
+        <div class="card">
+          <div class="card-head"><h3>Difficulty Breakdown</h3></div>
+          <div class="diff-bar"><span style="width:45%; background:#8ee6a8;"></span><span style="width:35%; background:#ffd479;"></span><span style="width:20%; background:#ff9a9a;"></span></div>
+          <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:12px; color:var(--purple-mid);"><span>🟢 Easy 140</span><span>🟠 Medium 109</span><span>🔴 Hard 63</span></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h3>Connected Platforms</h3></div>
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <div class="plat-card"><div class="logo" style="background:#FFA116;">LC</div><div><div style="font-weight:600; font-size:13.5px;">LeetCode</div><div class="lbl">198 solved · Rank top 18%</div></div></div>
+            <div class="plat-card"><div class="logo" style="background:#4a3f6b;">CF</div><div><div style="font-weight:600; font-size:13.5px;">Codeforces</div><div class="lbl">Rating 1742 · Specialist</div></div></div>
+            <div class="plat-card"><div class="logo" style="background:#8EC5FC;">GfG</div><div><div style="font-weight:600; font-size:13.5px;">GeeksforGeeks</div><div class="lbl">64 solved · 3 badges</div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Daily Coding Challenge</h3><span class="tag">+80 XP</span></div>
+        <div class="task" style="background:rgba(255,255,255,0.6);"><div class="check" onclick="celebrate('Challenge complete! 💻', 80, 25)"></div><div class="task-body"><div class="task-title">Two-Pointer Sliding Window — Medium</div><div class="task-meta">Est. 25 min <span class="chip med">Medium</span></div></div></div>
+      </div>
+    </div>
+
+    <!-- COMPANION -->
+    <div class="panel" id="panel-companion">
+      <div class="card">
+        <div class="card-head"><h3>Your Companion — Ember Kit</h3><span class="tag">Level 7</span></div>
+        <div class="companion-hero">
+          <div class="aura lg" style="--aura-pct:70%;"><canvas id="foxCanvasBig" width="260" height="260" style="width:228px;height:228px;"></canvas></div>
+          <div style="flex:1; min-width:220px;">
+            <p style="font-size:13.5px; line-height:1.6; color:var(--purple-mid);">Ember Kit grows stronger the more consistently you study — not the harder you push. Keep a gentle, steady rhythm and it'll evolve on its own.</p>
+            <div class="bar-track" style="margin-top:14px;"><div class="bar-fill" style="width:65%"></div></div>
+            <div class="lbl" style="margin-top:6px;">2,480 / 2,900 XP to next evolution</div>
+          </div>
+        </div>
+        <div class="evo-track">
+          <div class="evo-stage reached" data-stage="egg"><div class="emoji"><img class="evo-img" src="" alt=""></div><div class="lv">Lv 1</div><div class="nm">Ember Egg</div></div>
+          <div class="evo-stage reached current" data-stage="kit"><div class="emoji"><img class="evo-img" src="" alt=""></div><div class="lv">Lv 7</div><div class="nm">Ember Kit</div></div>
+          <div class="evo-stage" data-stage="flame"><div class="emoji"><img class="evo-img" src="" alt=""></div><div class="lv">Lv 15</div><div class="nm">Flame Fox</div></div>
+          <div class="evo-stage" data-stage="star"><div class="emoji"><img class="evo-img" src="" alt=""></div><div class="lv">Lv 30</div><div class="nm">Star Vixen</div></div>
+          <div class="evo-stage" data-stage="sovereign"><div class="emoji"><img class="evo-img" src="" alt=""></div><div class="lv">Lv 50</div><div class="nm">Sovereign Ember</div></div>
+        </div>
+      </div>
+      <div class="grid g3">
+        <div class="card"><div class="card-head"><h3>Badges</h3></div><div style="display:flex; gap:10px; flex-wrap:wrap; font-size:26px;">🏅🎯📘🔥🧠🌙</div></div>
+        <div class="card"><div class="card-head"><h3>Leaderboard (Friends)</h3></div><div class="progress-note">You're #3 of 12 this week 🌸</div></div>
+        <div class="card"><div class="card-head"><h3>Achievement Timeline</h3></div><div class="progress-note">21-day streak · Lv 5 → Lv 7 · 3 mock tests completed</div></div>
+      </div>
+    </div>
+
+    <!-- FOCUS -->
+    <div class="panel" id="panel-focus">
+      <div class="card focus-wrap">
+        <div class="timer-ring" id="timerRing">
+          <div style="text-align:center;">
+            <div class="timer-txt" id="timerTxt">25:00</div>
+            <div class="timer-sub" id="timerSub">Focus session</div>
+          </div>
+        </div>
+        <div class="timer-ctrls">
+          <button class="btn" id="timerBtn" onclick="toggleTimer()">▶ Start Focus</button>
+          <button class="btn ghost" onclick="resetTimer()">Reset</button>
+        </div>
+        <div class="sound-row" id="soundRow">
+          <div class="sound-chip" data-s="rain">🌧️ Rain</div>
+          <div class="sound-chip" data-s="lofi">🎧 Lo-fi</div>
+          <div class="sound-chip" data-s="forest">🌲 Forest</div>
+          <div class="sound-chip" data-s="white">🌫️ White noise</div>
+        </div>
+        <div>
+          <div class="card-head" style="justify-content:center; margin-bottom:8px;"><h3>Auto-blocked during focus</h3></div>
+          <div class="block-list">
+            <span class="block-item">Instagram</span><span class="block-item">YouTube</span><span class="block-item">Twitter/X</span><span class="block-item">Reddit</span><span class="block-item">Netflix</span><span class="block-item">+ customize</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BRAIN GYM -->
+    <div class="panel" id="panel-braingym">
+      <div class="card">
+        <div class="card-head"><h3>Memory Match</h3><span class="tag">Playable demo</span></div>
+        <div class="mem-grid" id="memGrid"></div>
+        <div class="progress-note" style="margin-top:12px;" id="memStatus">Find all the pairs to earn a small XP bonus 🌸</div>
+      </div>
+      <div class="grid g4">
+        <div class="game-card"><div class="em">🔢</div><h4>Sudoku</h4><p>Coming soon</p></div>
+        <div class="game-card"><div class="em">🎮</div><h4>2048</h4><p>Coming soon</p></div>
+        <div class="game-card"><div class="em">⌨️</div><h4>Typing Speed</h4><p>Coming soon</p></div>
+        <div class="game-card"><div class="em">⚡</div><h4>Reaction Test</h4><p>Coming soon</p></div>
+        <div class="game-card"><div class="em">♟️</div><h4>Chess Puzzles</h4><p>Coming soon</p></div>
+        <div class="game-card"><div class="em">🧩</div><h4>Pattern Recognition</h4><p>Coming soon</p></div>
+        <div class="game-card"><div class="em">➗</div><h4>Math Quiz</h4><p>Coming soon</p></div>
+        <div class="game-card"><div class="em">🔤</div><h4>Word Search</h4><p>Coming soon</p></div>
+      </div>
+    </div>
+
+    <!-- CALENDAR -->
+    <div class="panel" id="panel-calendar">
+      <div class="card">
+        <div class="card-head"><h3>July 2026</h3><span class="tag">3 exams · 6 deadlines</span></div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+    </div>
+
+    <!-- REWARDS -->
+    <div class="panel" id="panel-rewards">
+      <div class="card">
+        <div class="card-head"><h3>Rewards Store</h3><span class="tag">🪙 640 coins</span></div>
+        <div class="grid g4">
+          <div class="reward-card"><div class="em">🌙</div><div class="nm">Midnight Theme</div><div class="cost">220 coins</div></div>
+          <div class="reward-card"><div class="em">🦊</div><div class="nm">Fox Skin — Frost</div><div class="cost">300 coins</div></div>
+          <div class="reward-card"><div class="em">🎵</div><div class="nm">Lo-fi Pack Vol.2</div><div class="cost">150 coins</div></div>
+          <div class="reward-card"><div class="em">🖼️</div><div class="nm">Avatar Frame — Bloom</div><div class="cost">180 coins</div></div>
+          <div class="reward-card"><div class="em">✨</div><div class="nm">Confetti Style Pack</div><div class="cost">120 coins</div></div>
+          <div class="reward-card"><div class="em">🧸</div><div class="nm">Desk Widget — Pet Bed</div><div class="cost">260 coins</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MOOD MODAL -->
+<div class="modal-bg" id="moodModal">
+  <div class="modal">
+    <h2>How do you feel right now?</h2>
+    <p>We'll tune today's session length and difficulty to match your energy.</p>
+    <div class="mood-row">
+      <button class="mood-btn" onclick="pickMood('😊')">😊</button>
+      <button class="mood-btn" onclick="pickMood('😐')">😐</button>
+      <button class="mood-btn" onclick="pickMood('😔')">😔</button>
+      <button class="mood-btn" onclick="pickMood('😫')">😫</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ---------------- nav ---------------- */
+document.querySelectorAll('.navitem').forEach(item=>{
+  item.addEventListener('click', ()=>{
+    document.querySelectorAll('.navitem').forEach(i=>i.classList.remove('active'));
+    item.classList.add('active');
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById('panel-'+item.dataset.panel).classList.add('active');
+  });
+});
+
+/* ---------------- ambient particles ---------------- */
+const orbField = document.getElementById('orbField');
+for(let i=0;i<18;i++){
+  const p = document.createElement('div');
+  p.className='particle';
+  p.style.left = Math.random()*100+'vw';
+  p.style.bottom = '-10px';
+  p.style.animationDuration = (12+Math.random()*14)+'s';
+  p.style.animationDelay = (Math.random()*14)+'s';
+  orbField.appendChild(p);
+}
+
+/* ---------------- mood modal ---------------- */
+function pickMood(m){
+  document.getElementById('moodModal').style.display='none';
+  const sub = document.getElementById('greetSub');
+  const map = {
+    '😊':"You're glowing today — let's aim for a full 4-hour deep session.",
+    '😐':"Steady day. A balanced 3-hour plan with two breaks sounds right.",
+    '😔':"Let's keep it light — short focused sessions with extra rest today.",
+    '😫':"Be gentle with yourself. One small task is enough for today."
+  };
+  sub.textContent = map[m];
+}
+setTimeout(()=>{ /* modal already visible by default */ }, 0);
+
+/* ---------------- state ---------------- */
+let xp = 2480, coins = 640, streak = 12, level = 7;
+function refreshTop(){
+  document.getElementById('xpPill').textContent = xp.toLocaleString();
+  document.getElementById('coinPill').textContent = coins.toLocaleString();
+  document.getElementById('streakPill').textContent = streak;
+  document.getElementById('lvPill').textContent = level;
+}
+
+/* ---------------- tasks ---------------- */
+let tasks = [
+  {id:1, title:'Linear Algebra — Eigenvalues', priority:'high', time:'9:00–10:00 AM', xp:40, coins:10, done:true},
+  {id:2, title:'LeetCode Daily Challenge', priority:'med', time:'10:30–11:00 AM', xp:30, coins:8, done:true},
+  {id:3, title:'Organic Chemistry — Ch.4 Notes', priority:'med', time:'4:00–5:00 PM', xp:35, coins:10, done:false},
+  {id:4, title:'Mock Test — Physics Unit 3', priority:'high', time:'6:00–7:30 PM', xp:60, coins:18, done:false},
+  {id:5, title:'Revise: Spanish Vocabulary', priority:'low', time:'8:00–8:20 PM', xp:20, coins:5, done:false},
+];
+function renderTasks(){
+  const list = document.getElementById('taskList');
+  const plist = document.getElementById('plannerList');
+  list.innerHTML=''; plist.innerHTML='';
+  tasks.forEach(t=>{
+    const el = taskEl(t);
+    list.appendChild(el);
+    plist.appendChild(taskEl(t));
+  });
+  const doneCount = tasks.filter(t=>t.done).length;
+  document.getElementById('taskDoneCount').textContent = `${doneCount}/${tasks.length}`;
+  document.getElementById('taskBar').style.width = (doneCount/tasks.length*100)+'%';
+  document.getElementById('plannerCount').textContent = tasks.length+' tasks';
+}
+function taskEl(t){
+  const div = document.createElement('div');
+  div.className = 'task'+(t.done?' done':'');
+  const chipClass = t.priority==='high'?'high':t.priority==='med'?'med':'low';
+  const chipLabel = t.priority==='high'?'High':t.priority==='med'?'Medium':'Low';
+  div.innerHTML = `
+    <div class="check ${t.done?'on':''}">${t.done?'✓':''}</div>
+    <div class="task-body">
+      <div class="task-title">${t.title}</div>
+      <div class="task-meta">${t.time} <span class="chip ${chipClass}">${chipLabel}</span></div>
+    </div>
+    <div class="task-reward">+${t.xp} XP</div>
+  `;
+  div.querySelector('.check').addEventListener('click', ()=>{
+    if(!t.done){
+      t.done = true;
+      celebrate('Task complete! 🌸', t.xp, t.coins);
+    } else {
+      t.done = false;
+    }
+    renderTasks();
+  });
+  return div;
+}
+function addTask(){
+  const title = document.getElementById('newTaskTitle').value.trim();
+  if(!title) return;
+  const pr = document.getElementById('newTaskPriority').value;
+  tasks.push({id:Date.now(), title, priority:pr, time:'Unscheduled', xp: pr==='high'?50:pr==='med'?35:20, coins:10, done:false});
+  document.getElementById('newTaskTitle').value='';
+  renderTasks();
+}
+renderTasks();
+
+/* ---------------- celebration: confetti + toast + xp ---------------- */
+function toast(msg){
+  const wrap = document.getElementById('toast-wrap');
+  const el = document.createElement('div');
+  el.className='toast';
+  el.innerHTML = msg;
+  wrap.appendChild(el);
+  setTimeout(()=>el.remove(), 3000);
+}
+function celebrate(msg, gainedXp, gainedCoins){
+  xp += gainedXp; coins += gainedCoins;
+  if(xp > level*400){ level++; toast('🎉 Level up! Now Level '+level); }
+  refreshTop();
+  toast(`${msg}  <span style="color:#8C6FD8">+${gainedXp} XP · +${gainedCoins}🪙</span>`);
+  fireConfetti();
+}
+/* ================= 3D companion + 3D celebrations (Three.js) ================= */
+function buildToonGradient(){
+  const c = document.createElement('canvas'); c.width = 4; c.height = 1;
+  const cx = c.getContext('2d');
+  const steps = [90,140,195,255];
+  for(let i=0;i<4;i++){ cx.fillStyle = `rgb(${steps[i]},${steps[i]},${steps[i]})`; cx.fillRect(i,0,1,1); }
+  const tex = new THREE.CanvasTexture(c);
+  tex.magFilter = THREE.NearestFilter; tex.minFilter = THREE.NearestFilter;
+  return tex;
+}
+
+function buildFoxGroup(opts){
+  opts = Object.assign({bodyColor:0xF3A15A, bellyColor:0xFFF3E6, noseColor:0x4A3F6B, crown:false, sparkles:false, isEgg:false, flameTufts:false}, opts);
+  const grad = buildToonGradient();
+  const bodyMat = new THREE.MeshToonMaterial({color:opts.bodyColor, gradientMap:grad});
+  const bellyMat = new THREE.MeshToonMaterial({color:opts.bellyColor, gradientMap:grad});
+  const darkMat = new THREE.MeshToonMaterial({color:opts.noseColor, gradientMap:grad});
+  const goldMat = new THREE.MeshToonMaterial({color:0xFFD98E, gradientMap:grad});
+
+  const group = new THREE.Group();
+  const parts = {};
+
+  if(opts.isEgg){
+    const egg = new THREE.Mesh(new THREE.SphereGeometry(0.72,20,20), bodyMat);
+    egg.scale.set(0.85,1.15,0.85); egg.position.y = 0.25; group.add(egg);
+    const band = new THREE.Mesh(new THREE.TorusGeometry(0.5,0.06,10,24), bellyMat);
+    band.rotation.x = Math.PI/2; band.position.y = 0.1; group.add(band);
+    const crack1 = new THREE.Mesh(new THREE.BoxGeometry(0.04,0.32,0.04), darkMat);
+    crack1.position.set(0.2,0.4,0.6); crack1.rotation.z = 0.4; group.add(crack1);
+    parts.body = egg; parts.headGroup = null;
+    group.position.y = -0.35;
+    return {group, parts};
+  }
+
+  const body = new THREE.Mesh(new THREE.SphereGeometry(0.85,20,20), bodyMat);
+  body.scale.set(1,0.9,0.95); body.position.y = 0.1; group.add(body); parts.body = body;
+
+  const belly = new THREE.Mesh(new THREE.SphereGeometry(0.55,18,18), bellyMat);
+  belly.position.set(0,-0.08,0.5); belly.scale.set(0.85,0.85,0.55); group.add(belly);
+
+  const headGroup = new THREE.Group(); headGroup.position.set(0,1.05,0.12); group.add(headGroup); parts.headGroup = headGroup;
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.62,20,20), bodyMat); headGroup.add(head);
+  const muzzle = new THREE.Mesh(new THREE.SphereGeometry(0.3,16,16), bellyMat);
+  muzzle.position.set(0,-0.14,0.46); muzzle.scale.set(0.85,0.7,0.9); headGroup.add(muzzle);
+  const nose = new THREE.Mesh(new THREE.SphereGeometry(0.065,10,10), darkMat);
+  nose.position.set(0,-0.1,0.76); headGroup.add(nose);
+
+  function makeEar(x){
+    const g = new THREE.Group(); g.position.set(x,0.55,0);
+    const outer = new THREE.Mesh(new THREE.ConeGeometry(0.27,0.55,8), bodyMat);
+    outer.position.y = 0.28; g.add(outer);
+    const inner = new THREE.Mesh(new THREE.ConeGeometry(0.13,0.28,8), bellyMat);
+    inner.position.set(0,0.24,0.11); g.add(inner);
+    g.rotation.z = x>0 ? -0.32 : 0.32;
+    return g;
+  }
+  const earL = makeEar(-0.42), earR = makeEar(0.42);
+  headGroup.add(earL, earR); parts.earL = earL; parts.earR = earR;
+
+  function makeEye(x){
+    const g = new THREE.Group(); g.position.set(x,0.02,0.53);
+    const white = new THREE.Mesh(new THREE.SphereGeometry(0.125,12,12), new THREE.MeshBasicMaterial({color:0xffffff}));
+    g.add(white);
+    const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.085,12,12), new THREE.MeshBasicMaterial({color:0x2b2440}));
+    pupil.position.z = 0.06; g.add(pupil);
+    const sparkle = new THREE.Mesh(new THREE.SphereGeometry(0.03,6,6), new THREE.MeshBasicMaterial({color:0xffffff}));
+    sparkle.position.set(0.03,0.04,0.13); g.add(sparkle);
+    return g;
+  }
+  const eyeL = makeEye(-0.23), eyeR = makeEye(0.23);
+  headGroup.add(eyeL, eyeR); parts.eyeL = eyeL; parts.eyeR = eyeR;
+
+  const tailGroup = new THREE.Group(); tailGroup.position.set(0,0.25,-0.72); group.add(tailGroup); parts.tailGroup = tailGroup;
+  const t1 = new THREE.Mesh(new THREE.SphereGeometry(0.34,14,14), bodyMat); t1.position.set(0,0,-0.08); tailGroup.add(t1);
+  const t2 = new THREE.Mesh(new THREE.SphereGeometry(0.27,14,14), bodyMat); t2.position.set(0,0.15,-0.46); tailGroup.add(t2);
+  const t3 = new THREE.Mesh(new THREE.SphereGeometry(0.19,14,14), bellyMat); t3.position.set(0,0.27,-0.8); tailGroup.add(t3);
+
+  function makePaw(x){
+    const p = new THREE.Mesh(new THREE.SphereGeometry(0.21,12,12), bellyMat);
+    p.position.set(x,-0.62,0.52); return p;
+  }
+  group.add(makePaw(-0.34), makePaw(0.34));
+
+  if(opts.flameTufts){
+    [-0.4,0.4].forEach(x=>{
+      const flame = new THREE.Mesh(new THREE.ConeGeometry(0.09,0.3,6), new THREE.MeshBasicMaterial({color:0xFF7A45}));
+      flame.position.set(x,1.55,0.15); flame.rotation.x = 0.25;
+      group.add(flame);
+    });
+  }
+  if(opts.crown){
+    const crownGroup = new THREE.Group(); crownGroup.position.set(0,1.62,0.1);
+    const band = new THREE.Mesh(new THREE.CylinderGeometry(0.34,0.38,0.14,10), goldMat);
+    crownGroup.add(band);
+    for(let i=0;i<5;i++){
+      const spike = new THREE.Mesh(new THREE.ConeGeometry(0.06,0.16,6), goldMat);
+      const ang = (i/5)*Math.PI*2;
+      spike.position.set(Math.cos(ang)*0.3, 0.14, Math.sin(ang)*0.3);
+      crownGroup.add(spike);
+    }
+    group.add(crownGroup);
+  }
+  if(opts.sparkles){
+    for(let i=0;i<6;i++){
+      const s = new THREE.Mesh(new THREE.TetrahedronGeometry(0.06), new THREE.MeshBasicMaterial({color:0xB8A6E8}));
+      const ang = (i/6)*Math.PI*2;
+      s.position.set(Math.cos(ang)*1.1, 0.6+Math.sin(i)*0.3, Math.sin(ang)*1.1);
+      group.add(s);
+    }
+  }
+
+  group.position.y = -0.5;
+  return {group, parts};
+}
+
+function createFoxCompanion(canvasId, size, stageOpts){
+  const canvas = document.getElementById(canvasId);
+  if(!canvas || !window.THREE) return null;
+  const renderer = new THREE.WebGLRenderer({canvas, alpha:true, antialias:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
+  renderer.setSize(size, size);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
+  camera.position.set(0, 1.05, 4.6);
+  camera.lookAt(0, 0.55, 0);
+
+  const {group, parts} = buildFoxGroup(stageOpts || {});
+  scene.add(group);
+  const {body, headGroup, earL, earR, eyeL, eyeR, tailGroup} = parts;
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+  const key = new THREE.DirectionalLight(0xfff2e0, 0.9); key.position.set(2,3,4); scene.add(key);
+  const rimA = new THREE.PointLight((stageOpts&&stageOpts.rimColor)||0xB8A6E8, 0.9, 12); rimA.position.set(-2.5,1.2,-3); scene.add(rimA);
+  const rimB = new THREE.PointLight(0xF5A9C4, 0.6, 12); rimB.position.set(2.5,-1,-2); scene.add(rimB);
+
+  let t = 0, jumpT = 0, blinkTimer = 2 + Math.random()*2;
+  (function animate(){
+    requestAnimationFrame(animate);
+    t += 0.016;
+    if(body) body.scale.y = (body.scale.y||0.9)*0 + 0.9 + Math.sin(t*1.8)*0.02;
+    if(headGroup){
+      headGroup.rotation.y = Math.sin(t*0.6)*0.16;
+      headGroup.rotation.z = Math.sin(t*0.9)*0.03;
+    }
+    if(tailGroup) tailGroup.rotation.y = Math.sin(t*2.2)*0.4;
+    if(earL) earL.rotation.x = Math.sin(t*3)*0.05;
+    if(earR) earR.rotation.x = Math.sin(t*3+1)*0.05;
+
+    if(eyeL && eyeR){
+      blinkTimer -= 0.016;
+      if(blinkTimer < 0){
+        const bp = (blinkTimer+0.15)/0.15;
+        const s = bp<0 ? 1 : Math.abs(Math.sin(Math.max(0,bp)*Math.PI));
+        eyeL.scale.y = 1-s*0.85; eyeR.scale.y = 1-s*0.85;
+        if(blinkTimer < -0.15){ blinkTimer = 2.5+Math.random()*3; eyeL.scale.y=1; eyeR.scale.y=1; }
+      }
+    }
+
+    if(jumpT > 0){
+      jumpT -= 0.028;
+      const p = Math.max(0,jumpT);
+      group.position.y = -0.5 + Math.sin(p*Math.PI)*0.9;
+      group.rotation.y = Math.sin(p*Math.PI*2)*0.35;
+      const squash = 1 - Math.sin(p*Math.PI)*0.15;
+      group.scale.set(1/squash, squash, 1/squash);
+    } else {
+      group.position.y = -0.5 + Math.sin(t*1.2)*0.05;
+      group.rotation.y *= 0.9;
+      group.scale.set(1,1,1);
+    }
+    renderer.render(scene, camera);
+  })();
+
+  return { jump(){ jumpT = 1; } };
+}
+
+/* ---- static 3D-rendered portraits for every evolution stage (replaces the flat emoji) ---- */
+const STAGE_LIBRARY = {
+  egg:       {isEgg:true, bodyColor:0xFFDDB0, bellyColor:0xFFF3E6, rimColor:0xB8A6E8},
+  kit:       {bodyColor:0xF3A15A, bellyColor:0xFFF3E6, rimColor:0xB8A6E8},
+  flame:     {bodyColor:0xE8683C, bellyColor:0xFFE3C2, flameTufts:true, rimColor:0xFF7A45},
+  star:      {bodyColor:0x6E5AA6, bellyColor:0xC9B8F5, sparkles:true, rimColor:0xB8A6E8},
+  sovereign: {bodyColor:0xE8A23C, bellyColor:0xFFE9C2, crown:true, sparkles:true, rimColor:0xFFD98E}
+};
+function renderFoxPortrait(opts, size){
+  const canvas = document.createElement('canvas');
+  const renderer = new THREE.WebGLRenderer({canvas, alpha:true, antialias:true, preserveDrawingBuffer:true});
+  renderer.setPixelRatio(2); renderer.setSize(size, size);
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
+  camera.position.set(0, 0.9, 4.8); camera.lookAt(0, 0.5, 0);
+  const {group} = buildFoxGroup(opts);
+  group.rotation.y = 0.4;
+  scene.add(group);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.85));
+  const key = new THREE.DirectionalLight(0xfff2e0, 1); key.position.set(2,3,4); scene.add(key);
+  const rim = new THREE.PointLight(opts.rimColor||0xB8A6E8, 1, 12); rim.position.set(-2.5,1.2,-3); scene.add(rim);
+  renderer.render(scene, camera);
+  const url = canvas.toDataURL('image/png');
+  renderer.dispose();
+  return url;
+}
+function renderAllEvoPortraits(){
+  document.querySelectorAll('.evo-stage').forEach(el=>{
+    const stage = el.dataset.stage;
+    const cfg = STAGE_LIBRARY[stage];
+    const img = el.querySelector('.evo-img');
+    if(cfg && img) img.src = renderFoxPortrait(cfg, 128);
+  });
+}
+
+let foxDash=null, foxBig=null;
+function initFoxes(){
+  foxDash = createFoxCompanion('foxCanvasDash', 130, STAGE_LIBRARY.kit);
+  foxBig = createFoxCompanion('foxCanvasBig', 260, STAGE_LIBRARY.kit);
+  renderAllEvoPortraits();
+}
+if(document.readyState==='complete' || document.readyState==='interactive') initFoxes();
+else document.addEventListener('DOMContentLoaded', initFoxes);
+
+/* ---- 3D particle burst (replaces flat 2D confetti) ---- */
+const burstCanvas = document.getElementById('burst-canvas');
+let burstRenderer, burstScene, burstCamera, burstParticles = [];
+function initBurst(){
+  if(!window.THREE) return;
+  burstRenderer = new THREE.WebGLRenderer({canvas:burstCanvas, alpha:true, antialias:true});
+  burstRenderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+  burstScene = new THREE.Scene();
+  burstCamera = new THREE.PerspectiveCamera(50, innerWidth/innerHeight, 0.1, 100);
+  burstCamera.position.set(0,0,10);
+  function resizeBurst(){
+    burstRenderer.setSize(innerWidth, innerHeight);
+    burstCamera.aspect = innerWidth/innerHeight;
+    burstCamera.updateProjectionMatrix();
+  }
+  resizeBurst(); window.addEventListener('resize', resizeBurst);
+
+  let last = performance.now();
+  (function animateBurst(){
+    requestAnimationFrame(animateBurst);
+    const now = performance.now();
+    const dt = Math.min((now-last)/1000, 0.05); last = now;
+    burstParticles.forEach(p=>{
+      p.age += dt; p.vy -= 9.8*dt;
+      p.mesh.position.x += p.vx*dt;
+      p.mesh.position.y += p.vy*dt;
+      p.mesh.position.z += p.vz*dt;
+      p.mesh.rotation.x += p.rx*dt;
+      p.mesh.rotation.y += p.ry*dt;
+      p.mesh.material.opacity = Math.max(0, 1-(p.age/p.life));
+    });
+    burstParticles = burstParticles.filter(p=>{
+      if(p.age >= p.life){ burstScene.remove(p.mesh); p.mesh.geometry.dispose(); p.mesh.material.dispose(); return false; }
+      return true;
+    });
+    if(burstScene && burstCamera) burstRenderer.render(burstScene, burstCamera);
+  })();
+}
+if(document.readyState==='complete' || document.readyState==='interactive') initBurst();
+else document.addEventListener('DOMContentLoaded', initBurst);
+
+function fireConfetti(){
+  if(!burstScene) return;
+  const geoms = [new THREE.OctahedronGeometry(0.2), new THREE.TorusGeometry(0.15,0.055,8,16), new THREE.TetrahedronGeometry(0.19)];
+  const colors = [0x8EC5FC,0xB8A6E8,0xF5A9C4,0xFFD98E,0xA8E6B5];
+  for(let i=0;i<45;i++){
+    const geo = geoms[Math.floor(Math.random()*geoms.length)];
+    const mat = new THREE.MeshBasicMaterial({color:colors[Math.floor(Math.random()*colors.length)], transparent:true});
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set((Math.random()-0.5)*1.2, -1.6, (Math.random()-0.5)*0.5);
+    burstScene.add(mesh);
+    burstParticles.push({
+      mesh,
+      vx:(Math.random()-0.5)*6.5,
+      vy: Math.random()*7+4,
+      vz:(Math.random()-0.5)*3,
+      rx:(Math.random()-0.5)*7, ry:(Math.random()-0.5)*7,
+      life: 1.6+Math.random()*0.6, age:0
+    });
+  }
+  if(foxDash) foxDash.jump();
+  if(foxBig) foxBig.jump();
+}
+
+/* ---------------- heatmap ---------------- */
+const heatmap = document.getElementById('heatmap');
+for(let i=0;i<26*7;i++){
+  const d = document.createElement('div');
+  const r = Math.random();
+  const lvl = r>0.85?'l4':r>0.65?'l3':r>0.4?'l2':r>0.2?'l1':'';
+  d.className = 'hcell '+lvl;
+  heatmap.appendChild(d);
+}
+
+/* ---------------- calendar ---------------- */
+const calGrid = document.getElementById('calGrid');
+['S','M','T','W','T','F','S'].forEach(d=>{
+  const el=document.createElement('div');
+  el.style.textAlign='center'; el.style.fontSize='11px'; el.style.color='var(--purple-mid)'; el.style.fontWeight='700';
+  el.textContent=d; calGrid.appendChild(el);
+});
+const startOffset = 3; // Jul 1 2026 = Wednesday
+const daysInMonth = 31;
+for(let i=0;i<startOffset;i++){
+  const el=document.createElement('div'); el.className='cal-day muted'; calGrid.appendChild(el);
+}
+const deadlineDays = [4,9,15,20,24,28];
+for(let d=1; d<=daysInMonth; d++){
+  const el=document.createElement('div');
+  el.className='cal-day'+(d===24?' today':'');
+  el.innerHTML = d + (deadlineDays.includes(d)?'<div class="cal-dot"></div>':'');
+  calGrid.appendChild(el);
+}
+
+/* ---------------- pomodoro timer ---------------- */
+let totalSeconds = 25*60, remaining = totalSeconds, timerInterval=null, running=false;
+const timerTxt = document.getElementById('timerTxt');
+const timerRing = document.getElementById('timerRing');
+const timerBtn = document.getElementById('timerBtn');
+function updateTimerDisplay(){
+  const m = Math.floor(remaining/60).toString().padStart(2,'0');
+  const s = (remaining%60).toString().padStart(2,'0');
+  timerTxt.textContent = `${m}:${s}`;
+  const pct = ((totalSeconds-remaining)/totalSeconds)*100;
+  timerRing.style.setProperty('--tpct', pct+'%');
+}
+function toggleTimer(){
+  if(running){
+    clearInterval(timerInterval); running=false; timerBtn.textContent='▶ Resume Focus';
+  } else {
+    running=true; timerBtn.textContent='⏸ Pause';
+    timerInterval = setInterval(()=>{
+      remaining--;
+      updateTimerDisplay();
+      if(remaining<=0){
+        clearInterval(timerInterval); running=false;
+        celebrate('Focus session complete! 🌿', 60, 15);
+        timerBtn.textContent='▶ Start Focus';
+        remaining = totalSeconds;
+        updateTimerDisplay();
+      }
+    },1000);
+  }
+}
+function resetTimer(){
+  clearInterval(timerInterval); running=false; remaining=totalSeconds;
+  timerBtn.textContent='▶ Start Focus'; updateTimerDisplay();
+}
+updateTimerDisplay();
+document.querySelectorAll('.sound-chip').forEach(chip=>{
+  chip.addEventListener('click', ()=> chip.classList.toggle('on'));
+});
+
+/* ---------------- memory match ---------------- */
+const memGrid = document.getElementById('memGrid');
+const memStatus = document.getElementById('memStatus');
+const emojiSet = ['📘','🧪','🧮','🎧','📗','🧠','⏰','🍵'];
+let memCards = [...emojiSet, ...emojiSet].sort(()=>Math.random()-0.5);
+let flipped = [], matched = 0, lock=false;
+memCards.forEach((em,i)=>{
+  const c = document.createElement('div');
+  c.className='mem-card'; c.dataset.i=i; c.dataset.em=em; c.textContent=em;
+  c.addEventListener('click', ()=>{
+    if(lock || c.classList.contains('flip') || c.classList.contains('matched')) return;
+    c.classList.add('flip'); flipped.push(c);
+    if(flipped.length===2){
+      lock=true;
+      setTimeout(()=>{
+        if(flipped[0].dataset.em === flipped[1].dataset.em){
+          flipped.forEach(f=>{f.classList.add('matched'); f.classList.remove('flip');});
+          matched++;
+          if(matched===emojiSet.length){
+            memStatus.textContent = 'All matched! 🎉 +25 XP bonus earned';
+            celebrate('Memory Match cleared! 🧠', 25, 8);
+          }
+        } else {
+          flipped.forEach(f=>f.classList.remove('flip'));
+        }
+        flipped=[]; lock=false;
+      },700);
+    }
+  });
+  memGrid.appendChild(c);
+});
+</script>
+</body>
+</html>
